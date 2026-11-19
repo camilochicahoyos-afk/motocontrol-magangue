@@ -23,7 +23,7 @@ import co.edu.unicartagena.motocontrol.service.MotocicletaService;
 @Transactional
 public class MotocicletaServiceImpl implements MotocicletaService {
 
-    /** RN-02: un conductor puede tener como maximo dos motocicletas activas. */
+    /** RN-02: un mototaxista puede tener como maximo dos motocicletas activas. */
     static final int MAXIMO_MOTOS_ACTIVAS = 2;
 
     private final MotocicletaRepository motocicletaRepository;
@@ -42,15 +42,20 @@ public class MotocicletaServiceImpl implements MotocicletaService {
     public MotocicletaResponse registrar(MotocicletaRequest request) {
         String placa = MotocicletaMapper.normalizarPlaca(request.placa());
         if (motocicletaRepository.existsByPlaca(placa)) {
-            throw new RecursoDuplicadoException("Ya existe una motocicleta con la placa " + placa);
+            throw new RecursoDuplicadoException("Ya hay una motocicleta registrada con la placa " + placa + ".",
+                    "Verifique la placa; cada motocicleta se registra una sola vez.");
         }
         Conductor conductor = conductorRepository.findById(request.conductorId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Conductor", request.conductorId()));
+                .orElseThrow(() -> RecursoNoEncontradoException.mototaxista(request.conductorId()));
         if (conductor.getEstado() == EstadoConductor.INACTIVO) {
-            throw new ReglaNegocioException("No se pueden registrar motocicletas a un conductor inactivo");
+            throw new ReglaNegocioException("No se le pueden registrar motocicletas a "
+                    + conductor.nombreCompleto() + " porque está dado de baja.",
+                    "Actívelo de nuevo en la sección de mototaxistas y luego registre la moto.");
         }
         if (motocicletaRepository.countByConductorIdAndActivaTrue(conductor.getId()) >= MAXIMO_MOTOS_ACTIVAS) {
-            throw new ReglaNegocioException("El conductor ya tiene " + MAXIMO_MOTOS_ACTIVAS + " motocicletas activas");
+            throw new ReglaNegocioException(conductor.nombreCompleto() + " ya tiene " + MAXIMO_MOTOS_ACTIVAS
+                    + " motocicletas activas, que es el máximo permitido.",
+                    "Desactive una de sus motocicletas antes de registrar otra.");
         }
         Motocicleta guardada = motocicletaRepository.save(mapper.aEntidad(request, conductor));
         return mapper.aRespuesta(guardada);
@@ -77,7 +82,9 @@ public class MotocicletaServiceImpl implements MotocicletaService {
         String normalizada = MotocicletaMapper.normalizarPlaca(placa);
         return motocicletaRepository.findByPlaca(normalizada)
                 .map(mapper::aRespuesta)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Motocicleta", normalizada));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No hay ninguna motocicleta registrada con la placa " + normalizada + ".",
+                        "Revise la placa o registre la motocicleta en la sección de motocicletas."));
     }
 
     @Override
@@ -96,6 +103,6 @@ public class MotocicletaServiceImpl implements MotocicletaService {
 
     private Motocicleta obtener(Long id) {
         return motocicletaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Motocicleta", id));
+                .orElseThrow(() -> RecursoNoEncontradoException.motocicleta(id));
     }
 }

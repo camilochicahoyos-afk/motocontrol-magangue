@@ -5,6 +5,6 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.NotNull;
 
 public record DocumentosMotoRequest(
-        @NotNull LocalDate vencimientoSoat,
-        @NotNull LocalDate vencimientoTecnomecanica) {
+        @NotNull(message = "es obligatorio") LocalDate vencimientoSoat,
+        @NotNull(message = "es obligatorio") LocalDate vencimientoTecnomecanica) {
 }

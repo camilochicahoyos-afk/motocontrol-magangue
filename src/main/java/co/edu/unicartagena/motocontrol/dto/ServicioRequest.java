@@ -8,9 +8,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record ServicioRequest(
-        @NotNull Long conductorId,
-        @NotNull Long motocicletaId,
-        @NotBlank @Size(max = 80) String barrioOrigen,
-        @NotBlank @Size(max = 80) String barrioDestino,
-        @NotNull @Positive BigDecimal tarifa) {
+        @NotNull(message = "elija el mototaxista") Long conductorId,
+        @NotNull(message = "elija la motocicleta") Long motocicletaId,
+        @NotBlank(message = "es obligatorio") @Size(max = 80, message = "puede tener máximo 80 letras")
+        String barrioOrigen,
+        @NotBlank(message = "es obligatorio") @Size(max = 80, message = "puede tener máximo 80 letras")
+        String barrioDestino,
+        @NotNull(message = "es obligatoria") @Positive(message = "debe ser mayor que cero") BigDecimal tarifa) {
 }

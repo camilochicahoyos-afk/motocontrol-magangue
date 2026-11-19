@@ -110,7 +110,12 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 409\", function () { pm.response.to.have.status(409); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
@@ -154,7 +159,13 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 400\", function () { pm.response.to.have.status(400); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});",
+                  "pm.test(\"Explica cada campo en español\", function () { pm.expect(pm.response.json().detalles).to.have.lengthOf(2); });"
                 ]
               }
             }
@@ -359,7 +370,12 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 404\", function () { pm.response.to.have.status(404); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
@@ -453,7 +469,12 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 409\", function () { pm.response.to.have.status(409); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
@@ -576,10 +597,10 @@
       ]
     },
     {
-      "name": "3. Servicios",
+      "name": "3. Carreras y calificaciones",
       "item": [
         {
-          "name": "Iniciar servicio",
+          "name": "Iniciar carrera",
           "request": {
             "method": "POST",
             "header": [
@@ -625,7 +646,7 @@
           ]
         },
         {
-          "name": "Segundo servicio en curso (422)",
+          "name": "Segunda carrera en curso (422)",
           "request": {
             "method": "POST",
             "header": [
@@ -662,14 +683,68 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Finalizar servicio",
+          "name": "Calificar carrera en curso (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicioId\": {{servicioId}},\n  \"estrellas\": 4,\n  \"aspectos\": [\n    \"AMABLE\",\n    \"MUY_LENTO\"\n  ],\n  \"comentario\": \"Buen trato, pero manejó muy lento.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar carrera",
           "request": {
             "method": "PATCH",
             "header": [],
@@ -694,7 +769,208 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Queda FINALIZADO\", function () { pm.expect(pm.response.json().estado).to.eql(\"FINALIZADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Opciones para calificar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones/opciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones",
+                "opciones"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Escala de 5 estrellas y opciones rápidas\", function () {",
+                  "    const op = pm.response.json();",
+                  "    pm.expect(op.escala).to.have.lengthOf(5);",
+                  "    pm.expect(op.loBueno).to.have.lengthOf(7);",
+                  "    pm.expect(op.loQueDebeMejorar).to.have.lengthOf(10);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Calificar mototaxista",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicioId\": {{servicioId}},\n  \"estrellas\": 4,\n  \"aspectos\": [\n    \"AMABLE\",\n    \"MUY_LENTO\"\n  ],\n  \"comentario\": \"Buen trato, pero manejó muy lento.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Cuatro estrellas = Bueno\", function () { pm.expect(pm.response.json().valoracion).to.eql(\"Bueno\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Calificar dos veces la misma carrera (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicioId\": {{servicioId}},\n  \"estrellas\": 4,\n  \"aspectos\": [\n    \"AMABLE\",\n    \"MUY_LENTO\"\n  ],\n  \"comentario\": \"Buen trato, pero manejó muy lento.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reputación del mototaxista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones/conductores/{{conductorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones",
+                "conductores",
+                "{{conductorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Promedio y opiniones\", function () {",
+                  "    const datos = pm.response.json();",
+                  "    pm.expect(datos.reputacion.totalCalificaciones).to.eql(1);",
+                  "    pm.expect(datos.opiniones).to.have.lengthOf(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ranking de mototaxistas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/calificaciones/ranking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "calificaciones",
+                "ranking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"El primero queda en el puesto 1\", function () { pm.expect(pm.response.json()[0].puesto).to.eql(1); });"
                 ]
               }
             }
@@ -738,14 +1014,19 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Servicios del conductor",
+          "name": "Carreras del mototaxista",
           "request": {
             "method": "GET",
             "header": [],
@@ -822,7 +1103,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
-                  "pm.test(\"Hay al menos un servicio finalizado\", function () { pm.expect(pm.response.json().finalizados).to.be.above(0); });"
+                  "pm.test(\"Hay al menos una carrera finalizada\", function () { pm.expect(pm.response.json().finalizados).to.be.above(0); });"
                 ]
               }
             }
@@ -834,7 +1115,7 @@
       "name": "4. Estados y borrado lógico",
       "item": [
         {
-          "name": "Suspender conductor",
+          "name": "Suspender mototaxista",
           "request": {
             "method": "PATCH",
             "header": [
@@ -880,7 +1161,7 @@
           ]
         },
         {
-          "name": "Servicio con conductor suspendido (422)",
+          "name": "Carrera con mototaxista suspendido (422)",
           "request": {
             "method": "POST",
             "header": [
@@ -917,14 +1198,19 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });",
-                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });"
+                  "pm.test(\"Responde JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Explica el error y su solución\", function () {",
+                  "    const cuerpo = pm.response.json();",
+                  "    pm.expect(cuerpo.mensaje).to.be.a(\"string\");",
+                  "    pm.expect(cuerpo.solucion).to.be.a(\"string\");",
+                  "});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Inactivar conductor",
+          "name": "Dar de baja al mototaxista",
           "request": {
             "method": "DELETE",
             "header": [],

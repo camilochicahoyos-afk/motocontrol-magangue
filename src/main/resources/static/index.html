@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MotoControl Magangué</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23d9a441'/%3E%3Ctext x='32' y='41' font-size='24' font-family='Arial' font-weight='700' text-anchor='middle' fill='%230f4a3f'%3EMC%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --verde-oscuro: #0f4a3f; --verde-menu: #0b3c33; --verde: #12705a; --verde-hover: #0d5d4a;
+    --dorado: #d9a441; --estrella: #e8a33d; --fondo: #f4f1ea; --tarjeta: #ffffff; --borde: #e4dfd5;
+    --texto: #1d2a2c; --suave: #5e6b6d; --rojo: #b42318; --rojo-suave: #fde7e6; --naranja: #b54708;
+    --naranja-suave: #fcebdd; --verde-suave: #e2f2e9; --verde-texto: #1f7a4a; --gris-boton: #ebe8e2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif; background: var(--fondo);
+         color: var(--texto); font-size: 15px; line-height: 1.45; }
+  .contenedor { max-width: 1220px; margin: 0 auto; padding: 0 24px; }
+  .cabecera { background: var(--verde-oscuro); color: #fff; }
+  .marca { display: flex; align-items: center; gap: 16px; padding: 18px 24px; }
+  .logo { width: 54px; height: 54px; border-radius: 50%; background: var(--dorado); color: var(--verde-oscuro);
+          display: grid; place-items: center; font-weight: 800; font-size: 20px; flex: none; }
+  .marca h1 { margin: 0; font-size: 25px; letter-spacing: .2px; }
+  .marca p { margin: 2px 0 0; color: #c9e0d8; font-size: 14.5px; }
+  .menu { background: var(--verde-menu); }
+  .menu .contenedor { display: flex; gap: 2px; overflow-x: auto; }
+  .menu button { background: none; border: 0; color: #c9e0d8; font: inherit; font-size: 15.5px; padding: 14px 18px;
+                 cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .menu button:hover { color: #fff; }
+  .menu button.activo { color: #fff; font-weight: 600; border-bottom-color: var(--dorado); }
+  main { padding: 34px 24px 36px; }
+  .seccion { display: none; }
+  .seccion.visible { display: block; }
+  h2 { font-size: 27px; margin: 0 0 6px; }
+  .intro { color: var(--suave); max-width: 900px; margin: 0 0 22px; font-size: 15.5px; }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 14px; padding: 22px 24px;
+             margin-bottom: 22px; }
+  .tarjeta h3 { margin: 0 0 4px; font-size: 19px; }
+  .sub { margin: 0 0 16px; color: var(--suave); font-size: 14px; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px 18px; }
+  label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .ayuda { display: block; font-weight: 400; color: var(--suave); font-size: 12.5px; margin: -1px 0 5px; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cfc8bb; border-radius: 9px;
+                            font: inherit; background: #fff; color: var(--texto); }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #a7d5c4; border-color: var(--verde); }
+  input[readonly] { background: #f3f1ec; color: var(--suave); }
+  .mayusculas { text-transform: uppercase; }
+  .mayusculas::placeholder { text-transform: none; }
+  .acciones-form { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn { border: 0; border-radius: 9px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer;
+         background: var(--gris-boton); color: var(--texto); white-space: nowrap; }
+  .btn:hover { filter: brightness(.95); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primario { background: var(--verde); color: #fff; }
+  .btn-primario:hover { background: var(--verde-hover); filter: none; }
+  .btn-peligro { background: var(--rojo); color: #fff; }
+  .btn-activar { background: #11634f; color: #fff; }
+  .btn-calificar { background: #fbefd9; color: #8a5a00; }
+  .btn-pequeno { padding: 6px 11px; font-size: 13.5px; }
+  .filtros { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 4px 0 14px; }
+  .filtros > div { min-width: 210px; }
+  .tabla-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12.5px; letter-spacing: .05em; color: var(--suave); text-transform: uppercase;
+       padding: 10px; border-bottom: 2px solid var(--borde); white-space: nowrap; }
+  td { padding: 12px 10px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  .pastilla { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
+              white-space: nowrap; }
+  .p-verde { background: var(--verde-suave); color: var(--verde-texto); }
+  .p-roja { background: var(--rojo-suave); color: var(--rojo); }
+  .p-naranja { background: var(--naranja-suave); color: var(--naranja); }
+  .p-gris { background: #ecebe7; color: #5d6466; }
+  .vence { display: block; font-size: 13px; color: var(--suave); margin-top: 3px; }
+  .estrellas { color: var(--estrella); letter-spacing: 1px; white-space: nowrap; }
+  .estrellas .apagada { color: #d6d0c4; }
+  .vacio { color: var(--suave); padding: 16px 4px; margin: 0; }
+  .botones-fila { display: flex; gap: 6px; flex-wrap: wrap; }
+  .celda-calificacion > * { margin-bottom: 4px; }
+  .celda-calificacion > div:first-child { white-space: nowrap; }
+  .indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 14px; }
+  .indicador { background: #faf8f4; border: 1px solid var(--borde); border-radius: 12px; padding: 16px 18px; }
+  .indicador .valor { font-size: 30px; font-weight: 800; line-height: 1.1; }
+  .indicador .nombre { color: var(--suave); font-size: 14px; margin-top: 4px; }
+  .indicador.destacado { background: var(--verde-suave); border-color: #bfe0cf; }
+  .indicador.destacado .valor { color: var(--verde-texto); }
+  .alertas { list-style: none; padding: 0; margin: 0; }
+  .alertas li { display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--borde); }
+  .alertas li:last-child { border-bottom: 0; }
+  .alertas .que { min-width: 270px; font-weight: 600; }
+  .ranking { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
+  .ranking .tarjeta { margin: 0; }
+  .puesto { color: var(--suave); font-size: 13px; font-weight: 600; }
+  .nombre-ranking { font-size: 18.5px; font-weight: 700; margin: 4px 0 6px; }
+  .linea-promedio { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .promedio-grande { font-size: 40px; font-weight: 800; line-height: 1; }
+  .aviso-revision { background: var(--rojo-suave); color: var(--rojo); border-radius: 999px; padding: 4px 14px;
+                    font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+  .barras { margin: 6px 0 12px; }
+  .barras .fila { display: grid; grid-template-columns: 36px 1fr 24px; align-items: center; gap: 8px;
+                  font-size: 13.5px; margin: 5px 0; }
+  .barra { height: 8px; background: #ecebe6; border-radius: 99px; overflow: hidden; }
+  .barra span { display: block; height: 100%; background: var(--estrella); border-radius: 99px; }
+  .chip-dato { display: inline-block; border-radius: 999px; padding: 5px 12px; font-size: 13.5px; font-weight: 600;
+               margin: 0 6px 8px 0; border: 1.5px solid; }
+  .chip-dato.bueno { background: var(--verde-suave); color: var(--verde-texto); border-color: #9ccfb3; }
+  .chip-dato.mejorar { background: var(--naranja-suave); color: var(--naranja); border-color: #efb88f; }
+  .pasos { margin: 0; padding-left: 22px; }
+  .pasos li { margin-bottom: 9px; }
+  .glosario { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px 26px; margin: 0; }
+  .glosario dt { font-weight: 700; }
+  .glosario dd { margin: 2px 0 0; color: var(--suave); }
+  .reglas td:first-child { font-weight: 700; color: var(--verde-oscuro); white-space: nowrap; width: 80px; }
+  footer { border-top: 1px solid var(--borde); color: var(--suave); font-size: 13px; padding: 18px 0 26px; }
+  footer .contenedor { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: var(--suave); }
+  .fondo-modal { position: fixed; inset: 0; background: rgba(23, 31, 29, .48); display: flex; align-items: center;
+                 justify-content: center; padding: 20px; z-index: 50; }
+  .modal { background: #fff; border-radius: 16px; max-width: 640px; width: 100%; max-height: 92vh; overflow: auto;
+           padding: 26px 30px; box-shadow: 0 24px 70px rgba(0, 0, 0, .28); }
+  .modal h3 { margin: 0 0 12px; font-size: 23px; }
+  .modal-error h3 { color: var(--rojo); }
+  .modal p { margin: 0 0 10px; }
+  .detalles { margin: 4px 0 6px; padding-left: 20px; }
+  .detalles li { margin-bottom: 4px; }
+  .solucion { background: var(--naranja-suave); border-radius: 10px; padding: 12px 16px; margin: 14px 0 20px; }
+  .solucion strong { display: block; color: var(--naranja); font-size: 14px; margin-bottom: 3px; }
+  .estrellas-grandes { display: flex; justify-content: center; gap: 10px; margin-top: 6px; }
+  .estrellas-grandes button { background: none; border: 0; cursor: pointer; color: #dcd5c8; font-size: 50px;
+                              line-height: 1; padding: 0 2px; }
+  .estrellas-grandes button.on { color: var(--estrella); }
+  .valoracion { text-align: center; font-weight: 700; color: var(--verde-oscuro); min-height: 24px; margin: 6px 0 12px;
+                font-size: 17px; }
+  .grupo-titulo { font-weight: 700; margin: 14px 0 8px; font-size: 16px; }
+  .grupo-titulo .nota { font-weight: 400; color: var(--suave); font-size: 13.5px; }
+  .grupo-bueno { color: var(--verde-texto); }
+  .grupo-mejorar { color: var(--naranja); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1.5px solid #d8d1c4; background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit;
+          font-size: 14.5px; cursor: pointer; color: var(--texto); }
+  .chip.bueno.on { background: var(--verde-suave); border-color: var(--verde-texto); color: var(--verde-texto); font-weight: 600; }
+  .chip.mejorar.on { background: var(--naranja-suave); border-color: var(--naranja); color: var(--naranja); font-weight: 600; }
+  .etiqueta-comentario { margin-top: 16px; }
+  .contador { text-align: right; color: var(--suave); font-size: 13px; margin-top: 4px; }
+  .opinion { border-top: 1px solid var(--borde); padding: 12px 0; }
+  .opinion-cabeza { margin-bottom: 6px; }
+  .comentario { margin: 4px 0 0; }
+  .comentario.sin { color: var(--suave); font-style: italic; }
+  #avisos { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 70; }
+  .aviso { background: #123f35; color: #fff; padding: 12px 18px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+           font-weight: 600; transition: opacity .4s; }
+</style>
+</head>
+<body>
+<header class="cabecera">
+  <div class="contenedor marca">
+    <div class="logo">MC</div>
+    <div>
+      <h1>MotoControl Magangué</h1>
+      <p>Registro y control del servicio de mototaxismo · Magangué, Bolívar</p>
+    </div>
+  </div>
+  <nav class="menu">
+    <div class="contenedor">
+      <button data-seccion="resumen" class="activo">Resumen del día</button>
+      <button data-seccion="mototaxistas">Mototaxistas</button>
+      <button data-seccion="motocicletas">Motocicletas</button>
+      <button data-seccion="carreras">Carreras</button>
+      <button data-seccion="calificaciones">Calificaciones</button>
+      <button data-seccion="ayuda">¿Cómo funciona?</button>
+    </div>
+  </nav>
+</header>
+
+<main class="contenedor">
+
+  <!-- ===================== RESUMEN DEL DIA ===================== -->
+  <section id="resumen" class="seccion visible">
+    <h2>Resumen del día</h2>
+    <p class="intro">Cómo va el servicio: cuántas carreras se han hecho, cuánto se ha recaudado y qué papeles hay que
+      revisar. Los ingresos solo cuentan las carreras finalizadas.</p>
+    <div class="tarjeta">
+      <div class="filtros">
+        <div>
+          <label for="resumen-fecha">Día</label>
+          <input type="date" id="resumen-fecha">
+        </div>
+      </div>
+      <div class="indicadores" id="indicadores"></div>
+    </div>
+    <div class="tarjeta">
+      <h3>Papeles y avisos</h3>
+      <p class="sub">Lo que la asociación debe revisar hoy.</p>
+      <ul class="alertas" id="alertas"></ul>
+    </div>
+  </section>
+
+  <!-- ===================== MOTOTAXISTAS ===================== -->
+  <section id="mototaxistas" class="seccion">
+    <h2>Mototaxistas</h2>
+    <p class="intro">Las personas que prestan el servicio. Aquí se registran, se corrigen sus datos y se cambia su estado.
+      Un mototaxista dado de baja no se borra: su historial se conserva y se puede activar de nuevo.</p>
+    <div class="tarjeta">
+      <h3 id="titulo-form-mototaxista">Registrar mototaxista</h3>
+      <p class="sub">Todos los campos son obligatorios.</p>
+      <form id="form-mototaxista" autocomplete="off">
+        <div class="rejilla">
+          <div><label for="m-documento">Número de documento</label><span class="ayuda">Solo números, sin puntos (6 a 10)</span>
+            <input id="m-documento" inputmode="numeric" placeholder="Ej. 1052000111"></div>
+          <div><label for="m-nombres">Nombres</label><span class="ayuda">Como aparecen en la cédula</span>
+            <input id="m-nombres" placeholder="Ej. Luis Alberto"></div>
+          <div><label for="m-apellidos">Apellidos</label><span class="ayuda">Como aparecen en la cédula</span>
+            <input id="m-apellidos" placeholder="Ej. Mercado Pérez"></div>
+          <div><label for="m-telefono">Teléfono celular</label><span class="ayuda">10 números, empieza por 3</span>
+            <input id="m-telefono" inputmode="numeric" placeholder="Ej. 3001234567"></div>
+          <div><label for="m-barrio">Barrio</label><span class="ayuda">Donde vive o donde trabaja</span>
+            <input id="m-barrio" placeholder="Ej. Centro"></div>
+          <div><label for="m-licencia">Número de licencia</label><span class="ayuda">Como aparece en la licencia de conducción</span>
+            <input id="m-licencia" placeholder="Ej. 1052000111"></div>
+          <div><label for="m-vence">Vencimiento de la licencia</label><span class="ayuda">Fecha que dice la licencia</span>
+            <input id="m-vence" type="date"></div>
+        </div>
+        <div class="acciones-form">
+          <button type="submit" class="btn btn-primario" id="btn-guardar-mototaxista">Registrar</button>
+          <button type="button" class="btn" id="btn-cancelar-edicion" hidden>Cancelar edición</button>
+        </div>
+      </form>
+    </div>
+    <div class="tarjeta">
+      <h3>Lista de mototaxistas</h3>
+      <div class="filtros">
+        <div>
+          <label for="filtro-estado">Mostrar</label>
+          <select id="filtro-estado">
+            <option value="">Todos</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="SUSPENDIDO">Suspendidos</option>
+            <option value="INACTIVO">Dados de baja</option>
+          </select>
+        </div>
+        <div>
+          <label for="buscar-documento">Buscar por documento</label>
+          <input id="buscar-documento" inputmode="numeric" placeholder="Ej. 1052000111">
+        </div>
+        <button class="btn" id="btn-buscar-documento">Buscar</button>
+      </div>
+      <div class="tabla-scroll" id="tabla-mototaxistas"></div>
+    </div>
+  </section>
+
+  <!-- ===================== MOTOCICLETAS ===================== -->
+  <section id="motocicletas" class="seccion">
+    <h2>Motocicletas</h2>
+    <p class="intro">Las motos con las que trabajan los mototaxistas. El sistema revisa que el SOAT y la revisión
+      técnico-mecánica estén al día: si alguno está vencido, la moto no puede hacer carreras. Cada mototaxista puede
+      tener máximo dos motos activas.</p>
+    <div class="tarjeta">
+      <h3>Registrar motocicleta</h3>
+      <p class="sub">Todos los campos son obligatorios.</p>
+      <form id="form-moto" autocomplete="off">
+        <div class="rejilla">
+          <div><label for="mo-placa">Placa</label><span class="ayuda">3 letras, 2 números y 1 letra</span>
+            <input id="mo-placa" class="mayusculas" placeholder="Ej. ABC12D" maxlength="6"></div>
+          <div><label for="mo-marca">Marca</label><span class="ayuda">Fabricante de la moto</span>
+            <input id="mo-marca" placeholder="Ej. Bajaj"></div>
+          <div><label for="mo-linea">Línea</label><span class="ayuda">Referencia que dice la tarjeta de propiedad</span>
+            <input id="mo-linea" placeholder="Ej. Boxer CT 100"></div>
+          <div><label for="mo-modelo">Modelo (año)</label><span class="ayuda">Año de la moto</span>
+            <input id="mo-modelo" type="number" placeholder="Ej. 2022"></div>
+          <div><label for="mo-cilindraje">Cilindraje (c.c.)</label><span class="ayuda">Tamaño del motor</span>
+            <input id="mo-cilindraje" type="number" placeholder="Ej. 100"></div>
+          <div><label for="mo-soat">Vencimiento del SOAT</label><span class="ayuda">Fecha que dice el seguro</span>
+            <input id="mo-soat" type="date"></div>
+          <div><label for="mo-tecno">Vencimiento de la técnico-mecánica</label><span class="ayuda">Fecha que dice el certificado</span>
+            <input id="mo-tecno" type="date"></div>
+          <div><label for="mo-conductor">Mototaxista</label><span class="ayuda">Dueño o quien la trabaja</span>
+            <select id="mo-conductor"></select></div>
+        </div>
+        <div class="acciones-form"><button type="submit" class="btn btn-primario">Registrar</button></div>
+      </form>
+    </div>
+    <div class="tarjeta">
+      <h3>Lista de motocicletas</h3>
+      <div class="filtros">
+        <div>
+          <label for="filtro-moto-conductor">Mototaxista</label>
+          <select id="filtro-moto-conductor"></select>
+        </div>
+        <div>
+          <label for="buscar-placa">Buscar por placa</label>
+          <input id="buscar-placa" class="mayusculas" placeholder="Ej. ABC12D" maxlength="6">
+        </div>
+        <button class="btn" id="btn-buscar-placa">Buscar</button>
+      </div>
+      <div class="tabla-scroll" id="tabla-motos"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CARRERAS ===================== -->
+  <section id="carreras" class="seccion">
+    <h2>Carreras</h2>
+    <p class="intro">Cada viaje que hace un mototaxista. Al iniciar una carrera el sistema revisa automáticamente que el
+      mototaxista esté activo, con licencia vigente, que la moto sea suya y tenga los papeles al día, y que la tarifa
+      esté en el rango permitido.</p>
+    <div class="tarjeta">
+      <h3>Iniciar carrera</h3>
+      <p class="sub">Un mototaxista solo puede tener una carrera en curso a la vez.</p>
+      <form id="form-carrera" autocomplete="off">
+        <div class="rejilla">
+          <div><label for="ca-conductor">Mototaxista</label><select id="ca-conductor"></select></div>
+          <div><label for="ca-moto">Motocicleta</label><select id="ca-moto"></select></div>
+          <div><label for="ca-origen">Barrio de origen</label><input id="ca-origen" placeholder="Ej. Centro"></div>
+          <div><label for="ca-destino">Barrio de destino</label><input id="ca-destino" placeholder="Ej. Pueblo Nuevo"></div>
+          <div><label for="ca-tarifa">Tarifa (pesos)</label><span class="ayuda">Entre $2.000 y $15.000</span>
+            <input id="ca-tarifa" type="number" placeholder="Ej. 3000"></div>
+        </div>
+        <div class="acciones-form"><button type="submit" class="btn btn-primario">Iniciar carrera</button></div>
+      </form>
+    </div>
+    <div class="tarjeta">
+      <h3>Carreras de un mototaxista</h3>
+      <div class="filtros">
+        <div style="min-width:300px">
+          <label for="historial-conductor">Mototaxista</label>
+          <select id="historial-conductor"></select>
+        </div>
+      </div>
+      <div class="tabla-scroll" id="tabla-carreras"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CALIFICACIONES ===================== -->
+  <section id="calificaciones" class="seccion">
+    <h2>Calificaciones</h2>
+    <p class="intro">Lo que opinan los pasajeros de cada mototaxista. Al terminar una carrera se califica de 1 a 5
+      estrellas y se pueden marcar cosas buenas o por mejorar. Si un mototaxista tiene <strong>3 o más
+      calificaciones</strong> y su promedio es <strong>menor a 3 estrellas</strong>, queda marcado
+      <strong>para revisión</strong>.</p>
+    <div class="ranking" id="ranking"></div>
+  </section>
+
+  <!-- ===================== COMO FUNCIONA ===================== -->
+  <section id="ayuda" class="seccion">
+    <h2>¿Cómo funciona?</h2>
+    <p class="intro">MotoControl Magangué ayuda a la asociación de mototaxistas a saber quién presta el servicio, con
+      qué moto, si sus papeles están al día, cuántas carreras se hacen y qué opinan los pasajeros.</p>
+    <div class="tarjeta">
+      <h3>Para empezar</h3>
+      <ol class="pasos">
+        <li><strong>Registre al mototaxista</strong> en la sección Mototaxistas, con su documento, celular, barrio y
+          licencia de conducción.</li>
+        <li><strong>Registre su motocicleta</strong> en la sección Motocicletas, con las fechas de vencimiento del SOAT y
+          de la revisión técnico-mecánica.</li>
+        <li><strong>Inicie la carrera</strong> en la sección Carreras: elija el mototaxista y la moto, y escriba de dónde a
+          dónde va y cuánto cobra. El sistema revisa las reglas solo.</li>
+        <li><strong>Finalice la carrera</strong> cuando el pasajero llegue. En ese momento el pasajero puede calificar el
+          servicio.</li>
+        <li><strong>Mire el resumen del día</strong> para saber cuántas carreras se hicieron y cuánto se recaudó.</li>
+      </ol>
+    </div>
+    <div class="tarjeta">
+      <h3>¿Qué significa cada cosa?</h3>
+      <dl class="glosario">
+        <div><dt>Activo</dt><dd>Puede trabajar y hacer carreras.</dd></div>
+        <div><dt>Suspendido</dt><dd>No puede hacer carreras por un tiempo, por ejemplo mientras renueva un documento o
+          se aclara una queja. Se puede volver a activar.</dd></div>
+        <div><dt>Dado de baja</dt><dd>Ya no presta el servicio. No se borra, para conservar su historial, y se puede
+          activar otra vez si regresa.</dd></div>
+        <div><dt>Licencia vigente</dt><dd>La licencia de conducción no ha vencido.</dd></div>
+        <div><dt>SOAT</dt><dd>Seguro obligatorio que cubre a las personas heridas en accidentes de tránsito. Sin SOAT
+          vigente la moto no puede hacer carreras.</dd></div>
+        <div><dt>Revisión técnico-mecánica</dt><dd>Revisión periódica que certifica que la moto está en buen estado:
+          frenos, luces, llantas y gases.</dd></div>
+        <div><dt>Carrera en curso</dt><dd>El viaje empezó y todavía no termina. Un mototaxista solo puede tener una a la
+          vez.</dd></div>
+        <div><dt>Finalizada o cancelada</dt><dd>La carrera terminó bien o no se hizo. Solo las finalizadas suman a los
+          ingresos y se pueden calificar.</dd></div>
+        <div><dt>Calificación</dt><dd>Opinión del pasajero de 1 a 5 estrellas, con opciones rápidas y un comentario
+          opcional.</dd></div>
+        <div><dt>Para revisión</dt><dd>Aviso para la asociación cuando un mototaxista tiene 3 o más calificaciones y un
+          promedio menor a 3 estrellas. No lo suspende: es una alerta para conversar con él.</dd></div>
+      </dl>
+    </div>
+    <div class="tarjeta">
+      <h3>Reglas que revisa el sistema</h3>
+      <table class="reglas">
+        <tr><td>RN-01</td><td>El documento, la licencia y la placa no se pueden repetir.</td></tr>
+        <tr><td>RN-02</td><td>Cada mototaxista puede tener máximo dos motos activas.</td></tr>
+        <tr><td>RN-03</td><td>Nada se borra: los mototaxistas se dan de baja y las motos se desactivan, para conservar el historial.</td></tr>
+        <tr><td>RN-04</td><td>Solo los mototaxistas activos pueden hacer carreras.</td></tr>
+        <tr><td>RN-05</td><td>La licencia de conducción debe estar vigente.</td></tr>
+        <tr><td>RN-06</td><td>La moto debe estar activa y a nombre del mototaxista.</td></tr>
+        <tr><td>RN-07</td><td>El SOAT y la revisión técnico-mecánica deben estar vigentes.</td></tr>
+        <tr><td>RN-08</td><td>La tarifa debe estar entre $2.000 y $15.000.</td></tr>
+        <tr><td>RN-09</td><td>Un mototaxista solo puede tener una carrera en curso.</td></tr>
+        <tr><td>RN-10</td><td>Solo las carreras en curso se pueden finalizar o cancelar.</td></tr>
+        <tr><td>RN-11</td><td>Solo se califican carreras finalizadas.</td></tr>
+        <tr><td>RN-12</td><td>Cada carrera se califica una sola vez.</td></tr>
+        <tr><td>RN-13</td><td>Con 3 o más calificaciones y un promedio menor a 3 estrellas, el mototaxista queda «para revisión».</td></tr>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="contenedor">
+    <span>MotoControl Magangué · CIPA Chatgpteros · Universidad de Cartagena, Centro Tutorial Magangué · 2026</span>
+    <a href="/swagger-ui.html" target="_blank" rel="noopener">Documentación técnica (para desarrolladores)</a>
+  </div>
+</footer>
+<div id="avisos"></div>
+
+<script>
+'use strict';
+const BASE = '/api/v1';
+const $ = (selector) => document.querySelector(selector);
+const datos = { conductores: [], motos: [], reputacion: new Map(), opciones: null, editandoId: null };
+
+/* ---------- Formato colombiano ---------- */
+const esc = (texto) => String(texto ?? '').replace(/[&<>"']/g,
+  (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function fecha(iso) {
+  if (!iso) return '';
+  const [a, m, d] = iso.slice(0, 10).split('-');
+  return `${d}/${m}/${a}`;
+}
+function hora(iso) {
+  let [h, mi] = iso.slice(11, 16).split(':').map(Number);
+  const sufijo = h < 12 ? 'a. m.' : 'p. m.';
+  h = h % 12 || 12;
+  return `${h}:${String(mi).padStart(2, '0')} ${sufijo}`;
+}
+const fechaHora = (iso) => (iso ? `${fecha(iso)} ${hora(iso)}` : '—');
+const pesos = (valor) => '$' + String(Math.round(Number(valor) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const decimal = (valor) => (valor == null ? '' : Number(valor).toFixed(1).replace('.', ','));
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function estrellas(valor) {
+  const llenas = Math.round(Number(valor) || 0);
+  let html = '';
+  for (let i = 1; i <= 5; i++) html += i <= llenas ? '★' : '<span class="apagada">★</span>';
+  return `<span class="estrellas">${html}</span>`;
+}
+const vacio = (texto) => `<p class="vacio">${texto}</p>`;
+
+/* ---------- Comunicación con el sistema ---------- */
+async function api(ruta, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(BASE + ruta, { headers: { 'Content-Type': 'application/json' }, ...opciones });
+  } catch (e) {
+    throw { mensaje: 'No hay conexión con el sistema.',
+            solucion: 'Verifique que la aplicación esté encendida y vuelva a intentarlo.' };
+  }
+  if (respuesta.status === 204) return null;
+  let cuerpo = null;
+  try { cuerpo = await respuesta.json(); } catch (e) { cuerpo = null; }
+  if (!respuesta.ok) {
+    throw (cuerpo && cuerpo.mensaje) ? cuerpo
+      : { mensaje: 'No se pudo completar la operación.', solucion: 'Intente de nuevo en unos segundos.' };
+  }
+  return cuerpo;
+}
+const enviar = (ruta, accion, cuerpo) =>
+  api(ruta, { method: accion, body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo) });
+
+/* ---------- Ventanas, confirmaciones y avisos ---------- */
+function abrirModal(html, { cerrarAlFondo = true } = {}) {
+  const fondo = document.createElement('div');
+  fondo.className = 'fondo-modal';
+  fondo.innerHTML = html;
+  fondo.cerrar = () => fondo.remove();
+  fondo.addEventListener('click', (e) => {
+    if (e.target.closest('[data-cerrar]') || (cerrarAlFondo && e.target === fondo)) fondo.cerrar();
+  });
+  document.body.appendChild(fondo);
+  const foco = fondo.querySelector('[data-foco]') || fondo.querySelector('button');
+  if (foco) foco.focus({ preventScroll: true });
+  return fondo;
+}
+document.addEventListener('keydown', (e) => {
+  const modales = document.querySelectorAll('.fondo-modal');
+  if (e.key === 'Escape' && modales.length) modales[modales.length - 1].cerrar();
+});
+function mostrarError(error) {
+  const detalles = (error.detalles || []).length
+    ? `<ul class="detalles">${error.detalles.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '';
+  const solucion = error.solucion
+    ? `<div class="solucion"><strong>¿Cómo solucionarlo?</strong>${esc(error.solucion)}</div>` : '';
+  abrirModal(`<div class="modal modal-error"><h3>No se pudo completar</h3><p>${esc(error.mensaje)}</p>
+    ${detalles}${solucion}<button class="btn btn-primario" data-cerrar data-foco>Entendido</button></div>`);
+}
+function confirmar(titulo, texto, textoSi, clase = 'btn-peligro') {
+  return new Promise((resolver) => {
+    const fondo = abrirModal(`<div class="modal"><h3>${titulo}</h3><p>${texto}</p>
+      <div class="acciones-form"><button class="btn ${clase}" data-si>${textoSi}</button>
+      <button class="btn" data-cerrar data-foco>No, volver</button></div></div>`);
+    fondo.querySelector('[data-si]').addEventListener('click', () => { fondo.cerrar(); resolver(true); });
+    fondo.querySelector('[data-cerrar]').addEventListener('click', () => resolver(false));
+  });
+}
+function avisar(texto) {
+  const aviso = document.createElement('div');
+  aviso.className = 'aviso';
+  aviso.textContent = texto;
+  $('#avisos').appendChild(aviso);
+  setTimeout(() => { aviso.style.opacity = '0'; }, 3200);
+  setTimeout(() => aviso.remove(), 3700);
+}
+
+/* ---------- Menú ---------- */
+const cargadores = {
+  resumen: cargarResumen, mototaxistas: cargarMototaxistas, motocicletas: cargarMotocicletas,
+  carreras: prepararCarreras, calificaciones: cargarRanking, ayuda: () => {}
+};
+document.querySelectorAll('.menu button').forEach((boton) => boton.addEventListener('click', () => irA(boton.dataset.seccion)));
+function irA(seccion) {
+  document.querySelectorAll('.menu button').forEach((b) => b.classList.toggle('activo', b.dataset.seccion === seccion));
+  document.querySelectorAll('.seccion').forEach((s) => s.classList.toggle('visible', s.id === seccion));
+  history.replaceState(null, '', '#' + seccion);
+  cargadores[seccion]();
+}
+
+/* ---------- Datos compartidos ---------- */
+async function traerConductores() { datos.conductores = await api('/conductores'); }
+async function traerMotos() { datos.motos = await api('/motocicletas'); }
+async function traerReputacion() {
+  const ranking = await api('/calificaciones/ranking');
+  datos.reputacion = new Map(ranking.map((r) => [r.conductorId, r]));
+  return ranking;
+}
+const nombre = (c) => `${c.nombres} ${c.apellidos}`;
+function llenarSelect(select, conductores, primera) {
+  const actual = select.value;
+  select.innerHTML = `<option value="">${primera}</option>` + conductores.map((c) =>
+    `<option value="${c.id}">${esc(nombre(c))} · ${esc(c.numeroDocumento)}${c.estado !== 'ACTIVO' ? ' (' + textoEstado(c.estado).toLowerCase() + ')' : ''}</option>`).join('');
+  if ([...select.options].some((o) => o.value === actual)) select.value = actual;
+}
+function llenarSelectsConductores() {
+  const vigentes = datos.conductores.filter((c) => c.estado !== 'INACTIVO');
+  llenarSelect($('#mo-conductor'), vigentes, 'Elija el mototaxista...');
+  llenarSelect($('#filtro-moto-conductor'), datos.conductores, 'Todos');
+  llenarSelect($('#ca-conductor'), vigentes, 'Elija el mototaxista...');
+  llenarSelect($('#historial-conductor'), datos.conductores, 'Elija el mototaxista...');
+}
+const textoEstado = (e) => ({ ACTIVO: 'Activo', SUSPENDIDO: 'Suspendido', INACTIVO: 'Dado de baja' }[e] || e);
+const claseEstado = (e) => ({ ACTIVO: 'p-verde', SUSPENDIDO: 'p-naranja', INACTIVO: 'p-gris' }[e] || 'p-gris');
+
+/* ---------- Resumen del día ---------- */
+$('#resumen-fecha').value = hoyISO();
+$('#resumen-fecha').addEventListener('change', cargarResumen);
+async function cargarResumen() {
+  const dia = $('#resumen-fecha').value || hoyISO();
+  try {
+    const [resumen, conductores, motos, ranking] = await Promise.all([
+      api('/servicios/resumen?fecha=' + dia), api('/conductores'), api('/motocicletas'), api('/calificaciones/ranking')]);
+    const indicador = (titulo, valor, clase = '') =>
+      `<div class="indicador ${clase}"><div class="valor">${valor}</div><div class="nombre">${titulo}</div></div>`;
+    $('#indicadores').innerHTML = indicador('Carreras del día', resumen.totalServicios)
+      + indicador('Finalizadas', resumen.finalizados) + indicador('En curso', resumen.enCurso)
+      + indicador('Canceladas', resumen.cancelados)
+      + indicador('Ingresos del día', pesos(resumen.ingresosFinalizados), 'destacado');
+
+    const hoy = hoyISO();
+    const vigentes = conductores.filter((c) => c.estado !== 'INACTIVO');
+    const activos = conductores.filter((c) => c.estado === 'ACTIVO');
+    const licencias = vigentes.filter((c) => !c.licenciaVigente);
+    const motosVencidas = motos.filter((m) => m.activa && !m.documentosVigentes);
+    const revision = ranking.filter((r) => r.paraRevision);
+    const fila = (que, lista, bien) => `<li><span class="que">${que}</span><span>${lista.length
+      ? `<span class="pastilla p-roja">${lista.length}</span> ${lista.map(esc).join(', ')}`
+      : `<span class="pastilla p-verde">${bien}</span>`}</span></li>`;
+    const papeles = (m) => [m.vencimientoSoat < hoy ? 'SOAT' : null, m.vencimientoTecnomecanica < hoy ? 'técnico-mecánica' : null]
+      .filter(Boolean).join(' y ');
+    $('#alertas').innerHTML =
+      `<li><span class="que">Mototaxistas activos</span><span><strong>${activos.length}</strong> de ${conductores.length} registrados</span></li>`
+      + fila('Licencias vencidas', licencias.map(nombre), 'Ninguna')
+      + fila('Motos con papeles vencidos', motosVencidas.map((m) => `${m.placa} (${papeles(m)})`), 'Ninguna')
+      + fila('Mototaxistas para revisión', revision.map((r) => r.conductorNombre), 'Ninguno');
+  } catch (e) { mostrarError(e); }
+}
+
+/* ---------- Mototaxistas ---------- */
+const campoM = (id) => $('#m-' + id);
+$('#form-mototaxista').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const cuerpo = {
+    numeroDocumento: campoM('documento').value.trim(), nombres: campoM('nombres').value.trim(),
+    apellidos: campoM('apellidos').value.trim(), telefono: campoM('telefono').value.trim(),
+    barrio: campoM('barrio').value.trim(), numeroLicencia: campoM('licencia').value.trim(),
+    vencimientoLicencia: campoM('vence').value || null
+  };
+  try {
+    if (datos.editandoId) {
+      await enviar('/conductores/' + datos.editandoId, 'PUT', cuerpo);
+      avisar('Datos del mototaxista actualizados.');
+    } else {
+      await enviar('/conductores', 'POST', cuerpo);
+      avisar('Mototaxista registrado.');
+    }
+    terminarEdicion();
+    cargarMototaxistas();
+  } catch (error) { mostrarError(error); }
+});
+$('#btn-cancelar-edicion').addEventListener('click', terminarEdicion);
+function terminarEdicion() {
+  datos.editandoId = null;
+  $('#form-mototaxista').reset();
+  campoM('documento').readOnly = false;
+  $('#titulo-form-mototaxista').textContent = 'Registrar mototaxista';
+  $('#btn-guardar-mototaxista').textContent = 'Registrar';
+  $('#btn-cancelar-edicion').hidden = true;
+}
+function empezarEdicion(c) {
+  datos.editandoId = c.id;
+  campoM('documento').value = c.numeroDocumento; campoM('documento').readOnly = true;
+  campoM('nombres').value = c.nombres; campoM('apellidos').value = c.apellidos;
+  campoM('telefono').value = c.telefono; campoM('barrio').value = c.barrio;
+  campoM('licencia').value = c.numeroLicencia; campoM('vence').value = c.vencimientoLicencia;
+  $('#titulo-form-mototaxista').textContent = 'Editar a ' + nombre(c);
+  $('#btn-guardar-mototaxista').textContent = 'Guardar cambios';
+  $('#btn-cancelar-edicion').hidden = false;
+  $('#form-mototaxista').scrollIntoView({ behavior: 'smooth' });
+}
+$('#filtro-estado').addEventListener('change', () => { $('#buscar-documento').value = ''; cargarMototaxistas(); });
+$('#btn-buscar-documento').addEventListener('click', buscarPorDocumento);
+$('#buscar-documento').addEventListener('keydown', (e) => { if (e.key === 'Enter') buscarPorDocumento(); });
+async function cargarMototaxistas() {
+  const filtro = $('#filtro-estado').value;
+  try {
+    const [lista] = await Promise.all([api('/conductores' + (filtro ? '?estado=' + filtro : '')), traerReputacion()]);
+    pintarMototaxistas(lista);
+  } catch (e) { mostrarError(e); }
+}
+async function buscarPorDocumento() {
+  const documento = $('#buscar-documento').value.trim();
+  if (!documento) return cargarMototaxistas();
+  try {
+    const conductor = await api('/conductores/documento/' + encodeURIComponent(documento));
+    await traerReputacion();
+    pintarMototaxistas([conductor]);
+  } catch (e) { mostrarError(e); }
+}
+function celdaCalificacion(c) {
+  const r = datos.reputacion.get(c.id);
+  if (!r || r.totalCalificaciones === 0) {
+    return `<span class="pastilla p-gris">${c.estado === 'INACTIVO' ? 'No aplica' : 'Sin calificar'}</span>`;
+  }
+  return `<div class="celda-calificacion"><div>${estrellas(r.promedio)} <strong>${decimal(r.promedio)}</strong></div>
+    <div class="vence">(${r.totalCalificaciones})</div>
+    ${r.paraRevision ? '<div><span class="pastilla p-roja">Para revisión</span></div>' : ''}
+    <div><button class="btn btn-pequeno" data-opiniones="${c.id}">Ver opiniones</button></div></div>`;
+}
+function pintarMototaxistas(lista) {
+  datos.visibles = lista;
+  if (!lista.length) { $('#tabla-mototaxistas').innerHTML = vacio('No hay mototaxistas para mostrar.'); return; }
+  $('#tabla-mototaxistas').innerHTML = `<table><thead><tr><th>Documento</th><th>Nombre</th><th>Celular</th><th>Barrio</th>
+    <th>Licencia</th><th>Calificación</th><th>Estado</th><th></th></tr></thead><tbody>${lista.map((c) => `<tr>
+      <td>${esc(c.numeroDocumento)}</td><td>${esc(nombre(c))}</td><td>${esc(c.telefono)}</td><td>${esc(c.barrio)}</td>
+      <td><span class="pastilla ${c.licenciaVigente ? 'p-verde' : 'p-roja'}">${c.licenciaVigente ? 'Vigente' : 'Vencida'}</span>
+        <span class="vence">vence ${fecha(c.vencimientoLicencia)}</span></td>
+      <td>${celdaCalificacion(c)}</td>
+      <td><span class="pastilla ${claseEstado(c.estado)}">${textoEstado(c.estado)}</span></td>
+      <td><div class="botones-fila">
+        <button class="btn btn-pequeno" data-editar="${c.id}">Editar</button>
+        ${c.estado === 'ACTIVO' ? `<button class="btn btn-pequeno" data-estado="SUSPENDIDO" data-id="${c.id}">Suspender</button>`
+          : `<button class="btn btn-pequeno btn-activar" data-estado="ACTIVO" data-id="${c.id}">Activar</button>`}
+        ${c.estado !== 'INACTIVO' ? `<button class="btn btn-pequeno btn-peligro" data-baja="${c.id}">Dar de baja</button>` : ''}
+      </div></td></tr>`).join('')}</tbody></table>`;
+}
+$('#tabla-mototaxistas').addEventListener('click', async (e) => {
+  const boton = e.target.closest('button');
+  if (!boton) return;
+  const buscar = (id) => datos.visibles.find((c) => c.id === Number(id));
+  try {
+    if (boton.dataset.editar) {
+      empezarEdicion(buscar(boton.dataset.editar));
+    } else if (boton.dataset.opiniones) {
+      verOpiniones(boton.dataset.opiniones);
+    } else if (boton.dataset.estado) {
+      const c = buscar(boton.dataset.id);
+      await enviar(`/conductores/${c.id}/estado`, 'PATCH', { estado: boton.dataset.estado });
+      avisar(boton.dataset.estado === 'ACTIVO' ? `${nombre(c)} quedó activo.` : `${nombre(c)} quedó suspendido.`);
+      cargarMototaxistas();
+    } else if (boton.dataset.baja) {
+      const c = buscar(boton.dataset.baja);
+      const si = await confirmar('¿Dar de baja a este mototaxista?',
+        `${esc(nombre(c))} no podrá hacer carreras. Su historial se conserva y lo puede activar de nuevo cuando quiera.`,
+        'Sí, dar de baja');
+      if (!si) return;
+      await enviar('/conductores/' + c.id, 'DELETE');
+      avisar(`${nombre(c)} quedó dado de baja.`);
+      cargarMototaxistas();
+    }
+  } catch (error) { mostrarError(error); }
+});
+
+/* ---------- Motocicletas ---------- */
+$('#form-moto').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const numero = (id) => ($(id).value === '' ? null : Number($(id).value));
+  const cuerpo = {
+    placa: $('#mo-placa').value.trim(), marca: $('#mo-marca').value.trim(), linea: $('#mo-linea').value.trim(),
+    modelo: numero('#mo-modelo'), cilindraje: numero('#mo-cilindraje'),
+    vencimientoSoat: $('#mo-soat').value || null, vencimientoTecnomecanica: $('#mo-tecno').value || null,
+    conductorId: numero('#mo-conductor')
+  };
+  try {
+    await enviar('/motocicletas', 'POST', cuerpo);
+    avisar('Motocicleta registrada.');
+    $('#form-moto').reset();
+    cargarMotocicletas();
+  } catch (error) { mostrarError(error); }
+});
+$('#filtro-moto-conductor').addEventListener('change', () => { $('#buscar-placa').value = ''; cargarMotocicletas(); });
+$('#btn-buscar-placa').addEventListener('click', buscarPorPlaca);
+$('#buscar-placa').addEventListener('keydown', (e) => { if (e.key === 'Enter') buscarPorPlaca(); });
+async function cargarMotocicletas() {
+  try {
+    await traerConductores();
+    llenarSelectsConductores();
+    const conductor = $('#filtro-moto-conductor').value;
+    pintarMotos(await api('/motocicletas' + (conductor ? '?conductorId=' + conductor : '')));
+  } catch (e) { mostrarError(e); }
+}
+async function buscarPorPlaca() {
+  const placa = $('#buscar-placa').value.trim();
+  if (!placa) return cargarMotocicletas();
+  try { pintarMotos([await api('/motocicletas/placa/' + encodeURIComponent(placa))]); } catch (e) { mostrarError(e); }
+}
+function papel(vence) {
+  const vigente = vence >= hoyISO();
+  return `<span class="pastilla ${vigente ? 'p-verde' : 'p-roja'}">${vigente ? 'Vigente' : 'Vencido'}</span>
+    <span class="vence">vence ${fecha(vence)}</span>`;
+}
+function pintarMotos(lista) {
+  datos.motosVisibles = lista;
+  if (!lista.length) { $('#tabla-motos').innerHTML = vacio('No hay motocicletas para mostrar.'); return; }
+  $('#tabla-motos').innerHTML = `<table><thead><tr><th>Placa</th><th>Moto</th><th>Cilindraje</th><th>Mototaxista</th>
+    <th>SOAT</th><th>Técnico-mecánica</th><th>Estado</th><th></th></tr></thead><tbody>${lista.map((m) => `<tr>
+      <td><strong>${esc(m.placa)}</strong></td><td>${esc(m.marca)} ${esc(m.linea)}<span class="vence">Modelo ${m.modelo}</span></td>
+      <td>${m.cilindraje} c.c.</td><td>${esc(m.conductorNombre)}</td>
+      <td>${papel(m.vencimientoSoat)}</td><td>${papel(m.vencimientoTecnomecanica)}</td>
+      <td><span class="pastilla ${m.activa ? 'p-verde' : 'p-gris'}">${m.activa ? 'Activa' : 'Desactivada'}</span></td>
+      <td><div class="botones-fila">${m.activa ? `<button class="btn btn-pequeno" data-papeles="${m.id}">Actualizar papeles</button>
+        <button class="btn btn-pequeno btn-peligro" data-desactivar="${m.id}">Desactivar</button>` : ''}</div></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+$('#tabla-motos').addEventListener('click', async (e) => {
+  const boton = e.target.closest('button');
+  if (!boton) return;
+  const moto = datos.motosVisibles.find((m) => m.id === Number(boton.dataset.papeles || boton.dataset.desactivar));
+  if (boton.dataset.papeles) {
+    const fondo = abrirModal(`<div class="modal"><h3>Actualizar papeles de ${esc(moto.placa)}</h3>
+      <p class="sub">Escriba las nuevas fechas de vencimiento que aparecen en los documentos renovados.</p>
+      <div class="rejilla"><div><label>Vencimiento del SOAT</label><input type="date" data-soat value="${moto.vencimientoSoat}"></div>
+      <div><label>Vencimiento de la técnico-mecánica</label><input type="date" data-tecno value="${moto.vencimientoTecnomecanica}"></div></div>
+      <div class="acciones-form"><button class="btn btn-primario" data-guardar>Guardar</button><button class="btn" data-cerrar>Cancelar</button></div></div>`);
+    fondo.querySelector('[data-guardar]').addEventListener('click', async () => {
+      try {
+        await enviar(`/motocicletas/${moto.id}/documentos`, 'PATCH', {
+          vencimientoSoat: fondo.querySelector('[data-soat]').value || null,
+          vencimientoTecnomecanica: fondo.querySelector('[data-tecno]').value || null });
+        fondo.cerrar();
+        avisar(`Papeles de ${moto.placa} actualizados.`);
+        cargarMotocicletas();
+      } catch (error) { mostrarError(error); }
+    });
+  } else if (boton.dataset.desactivar) {
+    const si = await confirmar('¿Desactivar esta motocicleta?',
+      `La moto ${esc(moto.placa)} ya no se podrá usar en carreras. Su historial se conserva.`, 'Sí, desactivar');
+    if (!si) return;
+    try {
+      await enviar('/motocicletas/' + moto.id, 'DELETE');
+      avisar(`La moto ${moto.placa} quedó desactivada.`);
+      cargarMotocicletas();
+    } catch (error) { mostrarError(error); }
+  }
+});
+
+/* ---------- Carreras ---------- */
+$('#ca-conductor').addEventListener('change', pintarMotosCarrera);
+$('#historial-conductor').addEventListener('change', cargarHistorial);
+async function prepararCarreras() {
+  try {
+    await Promise.all([traerConductores(), traerMotos()]);
+    llenarSelectsConductores();
+    pintarMotosCarrera();
+    await cargarHistorial();
+  } catch (e) { mostrarError(e); }
+}
+function pintarMotosCarrera() {
+  const id = Number($('#ca-conductor').value);
+  const anterior = $('#ca-moto').value;
+  const motos = datos.motos.filter((m) => m.conductorId === id && m.activa);
+  $('#ca-moto').innerHTML = !id ? '<option value="">Primero elija el mototaxista</option>'
+    : motos.length ? motos.map((m) => `<option value="${m.id}">${esc(m.placa)} · ${esc(m.marca)} ${esc(m.linea)}</option>`).join('')
+    : '<option value="">Este mototaxista no tiene motos activas</option>';
+  if (motos.some((m) => String(m.id) === anterior)) $('#ca-moto').value = anterior;
+}
+$('#form-carrera').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const cuerpo = {
+    conductorId: Number($('#ca-conductor').value) || null, motocicletaId: Number($('#ca-moto').value) || null,
+    barrioOrigen: $('#ca-origen').value.trim(), barrioDestino: $('#ca-destino').value.trim(),
+    tarifa: $('#ca-tarifa').value === '' ? null : Number($('#ca-tarifa').value)
+  };
+  try {
+    const carrera = await enviar('/servicios', 'POST', cuerpo);
+    avisar(`Carrera iniciada: ${carrera.barrioOrigen} → ${carrera.barrioDestino}.`);
+    ['#ca-origen', '#ca-destino', '#ca-tarifa'].forEach((id) => { $(id).value = ''; });
+    $('#historial-conductor').value = String(carrera.conductorId);
+    cargarHistorial();
+  } catch (error) { mostrarError(error); }
+});
+const textoCarrera = { EN_CURSO: ['En curso', 'p-naranja'], FINALIZADO: ['Finalizada', 'p-verde'], CANCELADO: ['Cancelada', 'p-gris'] };
+async function cargarHistorial() {
+  const id = $('#historial-conductor').value;
+  if (!id) { $('#tabla-carreras').innerHTML = vacio('Elija un mototaxista para ver sus carreras.'); return; }
+  try {
+    const [carreras, opiniones] = await Promise.all([api('/servicios?conductorId=' + id), api('/calificaciones/conductores/' + id)]);
+    const calificadas = new Map(opiniones.opiniones.map((o) => [o.servicioId, o.estrellas]));
+    datos.carreras = carreras;
+    if (!carreras.length) { $('#tabla-carreras').innerHTML = vacio('Este mototaxista todavía no tiene carreras.'); return; }
+    carreras.sort((a, b) => b.id - a.id);
+    $('#tabla-carreras').innerHTML = `<table><thead><tr><th>N.º</th><th>Recorrido</th><th>Moto</th><th>Tarifa</th>
+      <th>Inicio</th><th>Fin</th><th>Estado</th><th></th></tr></thead><tbody>${carreras.map((c) => {
+        const [texto, clase] = textoCarrera[c.estado];
+        let acciones = '';
+        if (c.estado === 'EN_CURSO') {
+          acciones = `<button class="btn btn-pequeno btn-primario" data-finalizar="${c.id}">Finalizar</button>
+            <button class="btn btn-pequeno" data-cancelar="${c.id}">Cancelar</button>`;
+        } else if (c.estado === 'FINALIZADO') {
+          acciones = calificadas.has(c.id) ? `${estrellas(calificadas.get(c.id))} <span class="vence">Calificada</span>`
+            : `<button class="btn btn-pequeno btn-calificar" data-calificar="${c.id}">★ Calificar</button>`;
+        }
+        return `<tr><td>${c.id}</td><td>${esc(c.barrioOrigen)} → ${esc(c.barrioDestino)}</td><td>${esc(c.placa)}</td>
+          <td>${pesos(c.tarifa)}</td><td>${fechaHora(c.fechaHoraInicio)}</td><td>${fechaHora(c.fechaHoraFin)}</td>
+          <td><span class="pastilla ${clase}">${texto}</span></td><td><div class="botones-fila">${acciones}</div></td></tr>`;
+      }).join('')}</tbody></table>`;
+  } catch (e) { mostrarError(e); }
+}
+$('#tabla-carreras').addEventListener('click', async (e) => {
+  const boton = e.target.closest('button');
+  if (!boton) return;
+  const carrera = datos.carreras.find((c) => c.id === Number(boton.dataset.finalizar || boton.dataset.cancelar || boton.dataset.calificar));
+  try {
+    if (boton.dataset.finalizar) {
+      const finalizada = await enviar(`/servicios/${carrera.id}/finalizar`, 'PATCH');
+      avisar('Carrera finalizada.');
+      await cargarHistorial();
+      abrirCalificar(finalizada);
+    } else if (boton.dataset.cancelar) {
+      const si = await confirmar('¿Cancelar esta carrera?',
+        `La carrera ${esc(carrera.barrioOrigen)} → ${esc(carrera.barrioDestino)} quedará cancelada y no sumará a los ingresos del día.`,
+        'Sí, cancelar carrera');
+      if (!si) return;
+      await enviar(`/servicios/${carrera.id}/cancelar`, 'PATCH');
+      avisar('Carrera cancelada.');
+      cargarHistorial();
+    } else if (boton.dataset.calificar) {
+      abrirCalificar(carrera);
+    }
+  } catch (error) { mostrarError(error); }
+});
+
+/* ---------- Calificar al mototaxista ---------- */
+async function abrirCalificar(carrera) {
+  try {
+    if (!datos.opciones) datos.opciones = await api('/calificaciones/opciones');
+  } catch (error) { mostrarError(error); return; }
+  const op = datos.opciones;
+  const chips = (lista, tipo) => lista.map((o) =>
+    `<button type="button" class="chip ${tipo}" data-aspecto="${o.codigo}">${esc(o.descripcion)}</button>`).join('');
+  const fondo = abrirModal(`<div class="modal">
+    <h3>¿Cómo estuvo el servicio?</h3>
+    <p>Califique a ${esc(carrera.conductorNombre)} por la carrera ${esc(carrera.barrioOrigen)} → ${esc(carrera.barrioDestino)}.</p>
+    <div class="estrellas-grandes">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-n="${n}" title="${op.escala[n - 1]}">★</button>`).join('')}</div>
+    <div class="valoracion">Toque las estrellas</div>
+    <div class="grupo-titulo grupo-bueno">👍 Lo bueno <span class="nota">(marque todas las que apliquen)</span></div>
+    <div class="chips">${chips(op.loBueno, 'bueno')}</div>
+    <div class="grupo-titulo grupo-mejorar">⚠ Lo que debe mejorar</div>
+    <div class="chips">${chips(op.loQueDebeMejorar, 'mejorar')}</div>
+    <label class="etiqueta-comentario">Comentario</label><span class="ayuda">Opcional</span>
+    <textarea maxlength="300" rows="3" placeholder="Cuéntenos cómo le fue"></textarea>
+    <div class="contador">0 / 300</div>
+    <div class="acciones-form"><button class="btn" data-cerrar>Ahora no</button>
+      <button class="btn btn-primario" data-enviar disabled>Enviar calificación</button></div>
+  </div>`, { cerrarAlFondo: false });
+
+  let elegidas = 0;
+  const botonesEstrella = [...fondo.querySelectorAll('[data-n]')];
+  const pintar = (n) => botonesEstrella.forEach((b) => b.classList.toggle('on', Number(b.dataset.n) <= n));
+  botonesEstrella.forEach((b) => {
+    b.addEventListener('mouseenter', () => pintar(Number(b.dataset.n)));
+    b.addEventListener('mouseleave', () => pintar(elegidas));
+    b.addEventListener('click', () => {
+      elegidas = Number(b.dataset.n);
+      pintar(elegidas);
+      fondo.querySelector('.valoracion').textContent = op.escala[elegidas - 1];
+      fondo.querySelector('[data-enviar]').disabled = false;
+    });
+  });
+  fondo.querySelectorAll('[data-aspecto]').forEach((chip) => chip.addEventListener('click', () => chip.classList.toggle('on')));
+  const comentario = fondo.querySelector('textarea');
+  comentario.addEventListener('input', () => { fondo.querySelector('.contador').textContent = `${comentario.value.length} / 300`; });
+  fondo.querySelector('[data-enviar]').addEventListener('click', async () => {
+    try {
+      await enviar('/calificaciones', 'POST', {
+        servicioId: carrera.id, estrellas: elegidas,
+        aspectos: [...fondo.querySelectorAll('[data-aspecto].on')].map((c) => c.dataset.aspecto),
+        comentario: comentario.value.trim() || null });
+      fondo.cerrar();
+      avisar('¡Gracias! La calificación quedó guardada.');
+      if ($('#carreras').classList.contains('visible')) cargarHistorial();
+    } catch (error) { mostrarError(error); }
+  });
+}
+
+/* ---------- Calificaciones ---------- */
+async function cargarRanking() {
+  try { pintarRanking(await traerReputacion()); } catch (e) { mostrarError(e); }
+}
+function pintarRanking(ranking) {
+  if (!ranking.length) { $('#ranking').innerHTML = vacio('Todavía no hay mototaxistas registrados.'); return; }
+  $('#ranking').innerHTML = ranking.map((r) => {
+    if (!r.totalCalificaciones) {
+      return `<div class="tarjeta"><div class="puesto">Sin calificaciones</div><div class="nombre-ranking">${esc(r.conductorNombre)}</div>
+        <p class="sub">Cuando termine sus carreras, califíquelas para ver aquí su reputación.</p>
+        <button class="btn btn-pequeno" data-opiniones="${r.conductorId}">Ver opiniones</button></div>`;
+    }
+    const maximo = Math.max(...Object.values(r.distribucion), 1);
+    const barras = [5, 4, 3, 2, 1].map((n) => {
+      const cuantas = r.distribucion[n] || 0;
+      return `<div class="fila"><span>${n} ★</span><div class="barra"><span style="width:${(cuantas * 100) / maximo}%"></span></div><span>${cuantas}</span></div>`;
+    }).join('');
+    const frecuentes = r.aspectosFrecuentes.map((a) =>
+      `<span class="chip-dato ${a.positivo ? 'bueno' : 'mejorar'}">${esc(a.descripcion)} · ${a.veces}</span>`).join('');
+    return `<div class="tarjeta"><div class="puesto">Puesto ${r.puesto}</div><div class="nombre-ranking">${esc(r.conductorNombre)}</div>
+      <div class="linea-promedio"><span class="promedio-grande">${decimal(r.promedio)}</span>${estrellas(r.promedio)}<span>(${r.totalCalificaciones})</span></div>
+      ${r.paraRevision ? '<div class="aviso-revision">Para revisión</div>' : ''}
+      <div class="barras">${barras}</div><div>${frecuentes}</div>
+      <button class="btn btn-pequeno" data-opiniones="${r.conductorId}">Ver opiniones</button></div>`;
+  }).join('');
+}
+$('#ranking').addEventListener('click', (e) => {
+  const boton = e.target.closest('[data-opiniones]');
+  if (boton) verOpiniones(boton.dataset.opiniones);
+});
+async function verOpiniones(conductorId) {
+  try {
+    const { reputacion: r, opiniones } = await api('/calificaciones/conductores/' + conductorId);
+    const lista = opiniones.length ? opiniones.map((o) => `<div class="opinion">
+        <div class="opinion-cabeza">${estrellas(o.estrellas)} <strong>${esc(o.valoracion)}</strong>
+          <span class="vence">${fechaHora(o.fecha)} · ${esc(o.recorrido)}</span></div>
+        <div>${o.aspectos.map((a) => `<span class="chip-dato ${a.positivo ? 'bueno' : 'mejorar'}">${esc(a.descripcion)}</span>`).join('')}</div>
+        ${o.comentario ? `<p class="comentario">“${esc(o.comentario)}”</p>` : '<p class="comentario sin">Sin comentario.</p>'}
+      </div>`).join('') : vacio('Este mototaxista todavía no tiene calificaciones.');
+    const resumen = r.totalCalificaciones ? `<p>${estrellas(r.promedio)} <strong>${decimal(r.promedio)}</strong> de 5 ·
+      ${r.totalCalificaciones} ${r.totalCalificaciones === 1 ? 'calificación' : 'calificaciones'}
+      ${r.paraRevision ? ' <span class="pastilla p-roja">Para revisión</span>' : ''}</p>` : '';
+    abrirModal(`<div class="modal"><h3>Opiniones de ${esc(r.conductorNombre)}</h3>${resumen}${lista}
+      <div class="acciones-form"><button class="btn btn-primario" data-cerrar data-foco>Cerrar</button></div></div>`);
+  } catch (e) { mostrarError(e); }
+}
+
+/* ---------- Inicio ---------- */
+const inicial = location.hash.replace('#', '');
+irA(cargadores[inicial] ? inicial : 'resumen');
+</script>
+</body>
+</html>

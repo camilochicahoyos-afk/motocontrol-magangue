@@ -8,6 +8,7 @@ import java.time.ZoneId;
 
 import co.edu.unicartagena.motocontrol.domain.model.Conductor;
 import co.edu.unicartagena.motocontrol.domain.model.Motocicleta;
+import co.edu.unicartagena.motocontrol.domain.model.Servicio;
 import co.edu.unicartagena.motocontrol.dto.ConductorRequest;
 import co.edu.unicartagena.motocontrol.dto.MotocicletaRequest;
 import co.edu.unicartagena.motocontrol.dto.ServicioRequest;
@@ -46,6 +47,15 @@ public final class DatosPrueba {
     public static MotocicletaRequest motocicletaRequest(Long conductorId) {
         return new MotocicletaRequest("abc12d", "Bajaj", "Boxer CT 100", 2022, 100,
                 HOY.plusMonths(6), HOY.plusMonths(8), conductorId);
+    }
+
+    /** Carrera Centro -> Pueblo Nuevo de $3.000 ya finalizada (lista para calificar). */
+    public static Servicio carreraFinalizada(Long id, Conductor conductor) {
+        Servicio servicio = new Servicio(conductor, motocicleta(10L, conductor), "Centro", "Pueblo Nuevo",
+                BigDecimal.valueOf(3000), HOY.atTime(8, 0));
+        servicio.asignarId(id);
+        servicio.finalizar(HOY.atTime(8, 15));
+        return servicio;
     }
 
     public static ServicioRequest servicioRequest(long tarifa) {

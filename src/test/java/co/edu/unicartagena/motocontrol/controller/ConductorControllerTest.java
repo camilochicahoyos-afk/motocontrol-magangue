@@ -55,7 +55,7 @@ class ConductorControllerTest {
     }
 
     @Test
-    @DisplayName("POST con datos invalidos responde 400 con el detalle de los campos")
+    @DisplayName("POST con datos inválidos responde 400 con cada campo explicado en español")
     void registrarDatosInvalidos() throws Exception {
         String json = """
                 {"numeroDocumento":"12","nombres":"","apellidos":"Mercado",
@@ -65,17 +65,22 @@ class ConductorControllerTest {
 
         mockMvc.perform(post("/api/v1/conductores").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.mensaje").value("Datos de entrada invalidos"))
-                .andExpect(jsonPath("$.detalles.length()").value(3));
+                .andExpect(jsonPath("$.mensaje").value("Algunos datos del formulario no son válidos."))
+                .andExpect(jsonPath("$.solucion").value("Corrija los campos indicados y vuelva a intentarlo."))
+                .andExpect(jsonPath("$.detalles.length()").value(3))
+                .andExpect(jsonPath("$.detalles[2]")
+                        .value("Teléfono celular: debe ser un celular de 10 números que empiece por 3"));
     }
 
     @Test
-    @DisplayName("GET de un conductor inexistente responde 404")
+    @DisplayName("GET de un mototaxista inexistente responde 404 con mensaje y solución")
     void conductorInexistente() throws Exception {
-        when(conductorService.buscarPorId(99L)).thenThrow(new RecursoNoEncontradoException("Conductor", 99L));
+        when(conductorService.buscarPorId(99L)).thenThrow(RecursoNoEncontradoException.mototaxista(99L));
 
         mockMvc.perform(get("/api/v1/conductores/99"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.mensaje").value("No existe un mototaxista con el número 99."))
+                .andExpect(jsonPath("$.solucion").exists());
     }
 }

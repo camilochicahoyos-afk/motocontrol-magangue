@@ -81,11 +81,22 @@ public class Servicio {
         this.estado = EstadoServicio.CANCELADO;
     }
 
+    /** RN-10: solo las carreras en curso se pueden finalizar o cancelar. */
     private void validarEnCurso(String accion) {
         if (estado != EstadoServicio.EN_CURSO) {
             throw new ReglaNegocioException(
-                    "No se puede " + accion + " un servicio en estado " + estado);
+                    "Esta carrera ya está " + estado.getDescripcion() + ", por eso no se puede " + accion + ".",
+                    "Solo las carreras en curso se pueden finalizar o cancelar.");
         }
+    }
+
+    public boolean estaFinalizado() {
+        return estado == EstadoServicio.FINALIZADO;
+    }
+
+    /** Ejemplo: "Centro → Pueblo Nuevo". */
+    public String recorrido() {
+        return barrioOrigen + " → " + barrioDestino;
     }
 
     public Long getId() { return id; }

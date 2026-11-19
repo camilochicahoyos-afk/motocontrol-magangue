@@ -37,13 +37,13 @@ class ReglasServicioTest {
     }
 
     @Test
-    @DisplayName("RN-04: rechaza a un conductor suspendido")
+    @DisplayName("RN-04: rechaza a un mototaxista suspendido")
     void conductorSuspendido() {
         conductor.cambiarEstado(EstadoConductor.SUSPENDIDO);
 
         assertThatThrownBy(() -> new ConductorActivoRegla().validar(contexto(3000)))
                 .isInstanceOf(ReglaNegocioException.class)
-                .hasMessageContaining("SUSPENDIDO");
+                .hasMessageContaining("está suspendido");
     }
 
     @Test
@@ -56,14 +56,14 @@ class ReglasServicioTest {
     }
 
     @Test
-    @DisplayName("RN-06: rechaza una moto que pertenece a otro conductor")
+    @DisplayName("RN-06: rechaza una moto que pertenece a otro mototaxista")
     void motoDeOtroConductor() {
         Motocicleta motoAjena = DatosPrueba.motocicleta(11L, DatosPrueba.conductor(2L));
         ContextoServicio ctx = new ContextoServicio(conductor, motoAjena, BigDecimal.valueOf(3000), HOY);
 
         assertThatThrownBy(() -> new MotocicletaAsignadaRegla().validar(ctx))
                 .isInstanceOf(ReglaNegocioException.class)
-                .hasMessageContaining("no esta asignada");
+                .hasMessageContaining("no está registrada a nombre de");
     }
 
     @Test
@@ -73,17 +73,17 @@ class ReglasServicioTest {
 
         assertThatThrownBy(() -> new DocumentosMotoVigentesRegla().validar(contexto(3000)))
                 .isInstanceOf(ReglaNegocioException.class)
-                .hasMessageContaining("SOAT");
+                .hasMessage("El SOAT de la motocicleta ABC12D venció el 13/11/2026.");
     }
 
     @Test
-    @DisplayName("RN-07: rechaza una moto con tecnico-mecanica vencida")
+    @DisplayName("RN-07: rechaza una moto con técnico-mecánica vencida")
     void tecnomecanicaVencida() {
         moto.actualizarDocumentos(HOY.plusMonths(3), HOY.minusDays(1));
 
         assertThatThrownBy(() -> new DocumentosMotoVigentesRegla().validar(contexto(3000)))
                 .isInstanceOf(ReglaNegocioException.class)
-                .hasMessageContaining("tecnico-mecanica");
+                .hasMessageContaining("técnico-mecánica");
     }
 
     @Nested
@@ -102,12 +102,15 @@ class ReglasServicioTest {
         @Test
         void rechazaFueraDeRango() {
             assertThatThrownBy(() -> regla.validar(contexto(1500))).isInstanceOf(ReglaNegocioException.class);
-            assertThatThrownBy(() -> regla.validar(contexto(20000))).isInstanceOf(ReglaNegocioException.class);
+            assertThatThrownBy(() -> regla.validar(contexto(20000)))
+                    .isInstanceOf(ReglaNegocioException.class)
+                    .hasMessage("La tarifa de $20.000 está fuera del rango permitido.")
+                    .extracting("solucion").isEqualTo("Cobre entre $2.000 y $15.000 pesos.");
         }
     }
 
     @Test
-    @DisplayName("RN-09: rechaza si el conductor ya tiene un servicio en curso")
+    @DisplayName("RN-09: rechaza si el mototaxista ya tiene una carrera en curso")
     void servicioEnCurso() {
         ServicioRepository repo = mock(ServicioRepository.class);
         when(repo.existsByConductorIdAndEstado(1L, EstadoServicio.EN_CURSO)).thenReturn(true);

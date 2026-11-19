@@ -27,7 +27,7 @@ class ServicioTest {
     }
 
     @Test
-    @DisplayName("Un servicio nuevo inicia en estado EN_CURSO")
+    @DisplayName("Una carrera nueva inicia en estado EN_CURSO")
     void servicioNuevoEnCurso() {
         assertThat(servicio.getEstado()).isEqualTo(EstadoServicio.EN_CURSO);
         assertThat(servicio.getFechaHoraFin()).isNull();
@@ -43,12 +43,12 @@ class ServicioTest {
     }
 
     @Test
-    @DisplayName("No se puede cancelar un servicio ya finalizado")
+    @DisplayName("RN-10: no se puede cancelar una carrera ya finalizada")
     void noCancelaFinalizado() {
         servicio.finalizar(inicio.plusMinutes(12));
 
         assertThatThrownBy(() -> servicio.cancelar(inicio.plusMinutes(15)))
                 .isInstanceOf(ReglaNegocioException.class)
-                .hasMessageContaining("FINALIZADO");
+                .hasMessageContaining("ya está finalizada");
     }
 }

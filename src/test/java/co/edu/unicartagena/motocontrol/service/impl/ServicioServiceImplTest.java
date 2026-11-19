@@ -79,7 +79,7 @@ class ServicioServiceImplTest {
     void reglaFallidaNoGuarda() {
         when(conductorRepository.findById(1L)).thenReturn(Optional.of(conductor));
         when(motocicletaRepository.findById(10L)).thenReturn(Optional.of(moto));
-        doThrow(new ReglaNegocioException("regla incumplida")).when(regla).validar(any());
+        doThrow(new ReglaNegocioException("regla incumplida", "corregir el dato")).when(regla).validar(any());
 
         assertThatThrownBy(() -> service.registrar(DatosPrueba.servicioRequest(3000)))
                 .isInstanceOf(ReglaNegocioException.class);

@@ -8,24 +8,26 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ConductorRequest(
-        @NotBlank @Pattern(regexp = "\\d{6,10}", message = "debe tener entre 6 y 10 digitos")
+        @NotBlank(message = "es obligatorio")
+        @Pattern(regexp = "\\d{6,10}", message = "debe tener entre 6 y 10 números, sin puntos ni espacios")
         String numeroDocumento,
 
-        @NotBlank @Size(max = 60)
+        @NotBlank(message = "son obligatorios") @Size(max = 60, message = "pueden tener máximo 60 letras")
         String nombres,
 
-        @NotBlank @Size(max = 60)
+        @NotBlank(message = "son obligatorios") @Size(max = 60, message = "pueden tener máximo 60 letras")
         String apellidos,
 
-        @NotBlank @Pattern(regexp = "3\\d{9}", message = "debe ser un celular colombiano de 10 digitos")
+        @NotBlank(message = "es obligatorio")
+        @Pattern(regexp = "3\\d{9}", message = "debe ser un celular de 10 números que empiece por 3")
         String telefono,
 
-        @NotBlank @Size(max = 80)
+        @NotBlank(message = "es obligatorio") @Size(max = 80, message = "puede tener máximo 80 letras")
         String barrio,
 
-        @NotBlank @Size(max = 20)
+        @NotBlank(message = "es obligatorio") @Size(max = 20, message = "puede tener máximo 20 caracteres")
         String numeroLicencia,
 
-        @NotNull
+        @NotNull(message = "es obligatorio")
         LocalDate vencimientoLicencia) {
 }

@@ -7,7 +7,7 @@ import co.edu.unicartagena.motocontrol.domain.model.EstadoServicio;
 import co.edu.unicartagena.motocontrol.domain.repository.ServicioRepository;
 import co.edu.unicartagena.motocontrol.exception.ReglaNegocioException;
 
-/** RN-09: un conductor no puede tener dos servicios en curso al mismo tiempo. */
+/** RN-09: un mototaxista no puede tener dos carreras en curso al mismo tiempo. */
 @Component
 @Order(6)
 public class UnServicioEnCursoRegla implements ReglaServicio {
@@ -21,7 +21,8 @@ public class UnServicioEnCursoRegla implements ReglaServicio {
     @Override
     public void validar(ContextoServicio contexto) {
         if (servicioRepository.existsByConductorIdAndEstado(contexto.conductor().getId(), EstadoServicio.EN_CURSO)) {
-            throw new ReglaNegocioException("El conductor ya tiene un servicio en curso; debe finalizarlo o cancelarlo");
+            throw new ReglaNegocioException(contexto.conductor().nombreCompleto() + " ya tiene una carrera en curso.",
+                    "Finalice o cancele la carrera actual antes de iniciar otra.");
         }
     }
 }

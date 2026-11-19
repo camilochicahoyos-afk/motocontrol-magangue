@@ -20,8 +20,6 @@ import co.edu.unicartagena.motocontrol.service.ConductorService;
 @Transactional
 public class ConductorServiceImpl implements ConductorService {
 
-    private static final String RECURSO = "Conductor";
-
     private final ConductorRepository conductorRepository;
     private final ConductorMapper mapper;
 
@@ -58,14 +56,17 @@ public class ConductorServiceImpl implements ConductorService {
     public ConductorResponse buscarPorDocumento(String numeroDocumento) {
         return conductorRepository.findByNumeroDocumento(numeroDocumento)
                 .map(mapper::aRespuesta)
-                .orElseThrow(() -> new RecursoNoEncontradoException(RECURSO, numeroDocumento));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No hay ningún mototaxista registrado con el documento " + numeroDocumento + ".",
+                        "Revise el número o registre al mototaxista en la sección de mototaxistas."));
     }
 
     @Override
     public ConductorResponse actualizar(Long id, ConductorRequest request) {
         Conductor conductor = obtener(id);
         if (!conductor.getNumeroDocumento().equals(request.numeroDocumento())) {
-            throw new ReglaNegocioException("El numero de documento no se puede modificar");
+            throw new ReglaNegocioException("El número de documento no se puede cambiar.",
+                    "Deje el mismo documento. Si quedó mal escrito, avise al administrador del sistema.");
         }
         if (!conductor.getNumeroLicencia().equals(request.numeroLicencia().trim())) {
             validarLicenciaUnica(request.numeroLicencia());
@@ -82,7 +83,7 @@ public class ConductorServiceImpl implements ConductorService {
         return mapper.aRespuesta(conductorRepository.save(conductor));
     }
 
-    /** RN-03: los conductores no se borran fisicamente; se inactivan para conservar el historial. */
+    /** RN-03: los mototaxistas no se borran; se dan de baja (INACTIVO) para conservar el historial. */
     @Override
     public void inactivar(Long id) {
         cambiarEstado(id, EstadoConductor.INACTIVO);
@@ -90,18 +91,23 @@ public class ConductorServiceImpl implements ConductorService {
 
     private Conductor obtener(Long id) {
         return conductorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException(RECURSO, id));
+                .orElseThrow(() -> RecursoNoEncontradoException.mototaxista(id));
     }
 
     private void validarDocumentoUnico(String numeroDocumento) {
         if (conductorRepository.existsByNumeroDocumento(numeroDocumento)) {
-            throw new RecursoDuplicadoException("Ya existe un conductor con el documento " + numeroDocumento);
+            throw new RecursoDuplicadoException(
+                    "Ya hay un mototaxista registrado con el documento " + numeroDocumento + ".",
+                    "Búsquelo en la lista de mototaxistas; si es la misma persona, edite sus datos en vez de "
+                            + "registrarla otra vez.");
         }
     }
 
     private void validarLicenciaUnica(String numeroLicencia) {
         if (conductorRepository.existsByNumeroLicencia(numeroLicencia.trim())) {
-            throw new RecursoDuplicadoException("Ya existe un conductor con la licencia " + numeroLicencia);
+            throw new RecursoDuplicadoException(
+                    "Ya hay un mototaxista registrado con la licencia " + numeroLicencia.trim() + ".",
+                    "Verifique el número de la licencia de conducción; cada licencia se registra una sola vez.");
         }
     }
 }

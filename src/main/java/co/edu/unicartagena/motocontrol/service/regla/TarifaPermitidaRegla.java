@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import co.edu.unicartagena.motocontrol.exception.ReglaNegocioException;
+import co.edu.unicartagena.motocontrol.util.Formato;
 
 /** RN-08: la tarifa debe estar dentro del rango acordado (configurable en application.yml). */
 @Component
@@ -26,8 +27,9 @@ public class TarifaPermitidaRegla implements ReglaServicio {
     public void validar(ContextoServicio contexto) {
         BigDecimal tarifa = contexto.tarifa();
         if (tarifa.compareTo(tarifaMinima) < 0 || tarifa.compareTo(tarifaMaxima) > 0) {
-            throw new ReglaNegocioException("La tarifa debe estar entre " + tarifaMinima.toPlainString()
-                    + " y " + tarifaMaxima.toPlainString() + " pesos");
+            throw new ReglaNegocioException("La tarifa de " + Formato.pesos(tarifa)
+                    + " está fuera del rango permitido.",
+                    "Cobre entre " + Formato.pesos(tarifaMinima) + " y " + Formato.pesos(tarifaMaxima) + " pesos.");
         }
     }
 }

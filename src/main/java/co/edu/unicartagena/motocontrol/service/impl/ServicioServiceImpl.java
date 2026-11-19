@@ -53,9 +53,9 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     public ServicioResponse registrar(ServicioRequest request) {
         Conductor conductor = conductorRepository.findById(request.conductorId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Conductor", request.conductorId()));
+                .orElseThrow(() -> RecursoNoEncontradoException.mototaxista(request.conductorId()));
         Motocicleta motocicleta = motocicletaRepository.findById(request.motocicletaId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Motocicleta", request.motocicletaId()));
+                .orElseThrow(() -> RecursoNoEncontradoException.motocicleta(request.motocicletaId()));
 
         ContextoServicio contexto = new ContextoServicio(conductor, motocicleta, request.tarifa(), LocalDate.now(clock));
         reglas.forEach(regla -> regla.validar(contexto));
@@ -75,7 +75,7 @@ public class ServicioServiceImpl implements ServicioService {
     @Transactional(readOnly = true)
     public List<ServicioResponse> listarPorConductor(Long conductorId) {
         if (!conductorRepository.existsById(conductorId)) {
-            throw new RecursoNoEncontradoException("Conductor", conductorId);
+            throw RecursoNoEncontradoException.mototaxista(conductorId);
         }
         return servicioRepository.findByConductorId(conductorId).stream().map(mapper::aRespuesta).toList();
     }
@@ -117,6 +117,6 @@ public class ServicioServiceImpl implements ServicioService {
 
     private Servicio obtener(Long id) {
         return servicioRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Servicio", id));
+                .orElseThrow(() -> RecursoNoEncontradoException.carrera(id));
     }
 }

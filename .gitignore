@@ -1,0 +1,10 @@
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+.DS_Store
+nbactions.xml
+nb-configuration.xml
+1_instalar_herramientas.bat
+4_subir_github.bat

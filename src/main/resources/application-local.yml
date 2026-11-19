@@ -1,0 +1,9 @@
+# Perfil para ejecutar sin Docker ni PostgreSQL: java -jar motocontrol-api.jar --spring.profiles.active=local
+spring:
+  datasource:
+    url: jdbc:h2:mem:motocontrol;MODE=PostgreSQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true

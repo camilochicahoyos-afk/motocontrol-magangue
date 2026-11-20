@@ -13,6 +13,10 @@ Trabajo Colaborativo Contextualizado de **Ingeniería de Software** — Universi
 | Pruebas | JUnit 5, Mockito, AssertJ, MockMvc (36 pruebas) y Postman (30 peticiones) |
 | Contenedores | Docker y Docker Compose |
 
+## Versión publicada
+
+La página está publicada en **https://motocontrol-magangue.onrender.com** (plan gratuito de Render). Si nadie la usa durante 15 minutos se apaga, y la primera visita después puede tardar unos 50 segundos o más en abrir. Esa versión arranca con datos de prueba (perfil `demo`) y usa una base de datos en memoria, así que lo que se registre allí se borra cuando el servicio se reinicia.
+
 ## Cómo se usa
 
 | Dirección | Para quién |
@@ -36,6 +40,8 @@ Para detener: `docker compose down` (agregue `-v` para borrar los datos). En Win
 3. **Test** (Alt+F6): ejecuta las 36 pruebas JUnit.
 
 Con Maven por consola: `mvn spring-boot:run -Dspring-boot.run.profiles=local` y `mvn test` (o `2_ejecutar_pruebas.bat`).
+
+Para arrancar con los mismos datos de prueba de la versión publicada, use los perfiles `local,demo` (por ejemplo, `mvn spring-boot:run -Dspring-boot.run.profiles=local,demo`).
 
 ## Endpoints (23)
 
@@ -120,7 +126,7 @@ docker compose up --build
 
 ```
 src/main/java/co/edu/unicartagena/motocontrol
-├── config/             Reloj inyectable (America/Bogota) y datos de Swagger
+├── config/             Reloj inyectable (America/Bogota), datos de Swagger y datos de prueba (perfil demo)
 ├── controller/         Controladores REST (JSON)
 ├── domain/model/       Entidades: Conductor, Motocicleta, Servicio, Calificacion
 ├── domain/repository/  Repositorios Spring Data JPA
